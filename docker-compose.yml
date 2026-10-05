@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: hubuser
+      POSTGRES_PASSWORD: hubpass
+      POSTGRES_DB: resourcehub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
