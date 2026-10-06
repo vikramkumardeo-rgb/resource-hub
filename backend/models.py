@@ -9,6 +9,7 @@ resource_tags = Table(
     "resource_tags",
     Base.metadata,
     Column("resource_id", ForeignKey("resources.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True), 
 )
 
 class User(Base):
@@ -19,7 +20,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
 
-    resource: Mapped[list["Resource"]] = relationship(back_populates="submitted by")
+    resources: Mapped[list["Resource"]] = relationship(back_populates="submitted_by")
 
 class Resource(Base):
     __tablename__ = "resources"
@@ -36,7 +37,7 @@ class Resource(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    submitted_by: Mapped["User"] = relationship(back_populates="resource")
+    submitted_by: Mapped["User"] = relationship(back_populates="resources")
     tags: Mapped[list["Tag"]] = relationship(
         secondary=resource_tags, back_populates="resources"
     )
