@@ -1,36 +1,38 @@
-function ResourceList({ resources }) {
+function ResourceList({ resources, onDelete}) {
   if (resources.length === 0) {
     return <p className="empty">No resources yet.</p>;
   }
 
-  return (
-    <ul className="resource-list">
+  return(
+    <div className="resource-list">
       {resources.map((r) => (
-        <li key={r.id} className="card">
+        <div className="card" key={r.id}>
           <div className="card-top">
-            <h3>
-              <a href={r.url} target="_blank" rel="noreferrer">
-                {r.title}
-              </a>
-            </h3>
+            <a className="link" href={r.url} target="_blank" rel="noreferrer">
+              {r.title}
+            </a>
             <span className="badge">{r.resource_type}</span>
-            </div>
-            <p className="author">
-              by {r.author}
-              {r.rating ? " - Rating: " + r.rating + "/5" : ""}
-            </p>
-            {r.summary && <p>{r.summary}</p>}
-            <div className="tags">
-              {r.tags.map((t) => (
-                <span key={t.id} className="tag">
-                  {t.name}
-                </span>
-              ))}
-            </div>
-          </li>
-        ))}
-    </ul>
+          </div>
+
+          <p className="author">
+            by {r.author}
+            {r.rating ? " - Rating: " + r.rating + "/5" : ""}
+          </p>
+
+          {r.summary && <p>{r.summary}</p>}
+
+          <div className="tags">
+            {r.tags.map((t) => (
+              <span className="tag" key={t.id}>
+                {t.name}
+              </span>
+            ))}
+          </div>
+
+          <button onClick={() => onDelete(r.id)}>Delete</button>
+        </div>
+      ))}
+    </div>
   );
 }
-
-export default ResourceList;
+  export default ResourceList;

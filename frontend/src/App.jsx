@@ -1,7 +1,13 @@
-import {useEffect, useState} from 'react';
-import {getMe, getResources, hasToken, logout} from './api';
-import AuthForm from './AuthForm';
-import ResourceList from './ResourceList';
+import { useEffect, useState } from "react";
+import {
+  deleteResource,
+  getMe,
+  getResources,
+  hasToken,
+  logout,
+} from "./api";
+import AuthForm from "./AuthForm";
+import ResourceList from "./ResourceList";
 import "./App.css";
 
 function App() {
@@ -12,24 +18,20 @@ function App() {
 
   useEffect(() => {
     if (!loggedIn) return;
-
-    async function loadData() {
-      try {
-        const [me, list] = await Promise.all([getMe(), getResources()]);
+    Promise.all([getMe(), getResources()])
+      .then(([me, list]) => {
         setUser(me);
         setResources(list);
-        setError("");
-      } catch (err) {
-        if (err.status === 401) {
+      })
+            .catch((err) => {
+        const msg = err.message.toLowerCase();
+        if (msg.includes("token") || msg.includes("not authenticated")) {
           logout();
           setLoggedIn(false);
-        } else {
-          setError(err.message);
-        }       
-      }
-    }
-
-    loadData();
+          return;
+        }
+        setError(err.message);
+      });
   }, [loggedIn]);
 
   function handleLogout() {
@@ -39,26 +41,33 @@ function App() {
     setResources([]);
   }
 
+  async function handleDelete(id) {
+    if (!window.confirm("Delete this resource?")) return;
+    try {
+      await deleteResource(id);
+      setResources((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   return (
     <div className="app">
-      <header>
-        <h1>Resource Hub</h1>
-        {loggedIn && (
-          <div className="user">
-            {user && <span>Hi, {user.username}</span>}
-            <button onClick={handleLogout}>Log out</button>
-          </div>
-        )}
-      </header>
+      <h1>Resource Hub</h1>
 
       {loggedIn ? (
         <>
+          <div className="user">
+            <span>Hi, {user ? user.username : "..."}</span>
+            <button onClick={handleLogout}>Log out</button>
+          </div>
+
           {error && <p className="error">{error}</p>}
 
-          <ResourceList resources={resources} />
-          </>
+          <ResourceList resources={resources} onDelete={handleDelete} />
+        </>
       ) : (
-         <AuthForm onLoggedIn={() => setLoggedIn(true)} />
+        <AuthForm onLoggedIn={() => setLoggedIn(true)} />
       )}
     </div>
   );
