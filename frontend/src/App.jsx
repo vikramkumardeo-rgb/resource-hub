@@ -3,6 +3,7 @@ import {
   deleteResource,
   getMe,
   getResources,
+  getTags,
   hasToken,
   logout,
 } from "./api";
@@ -15,14 +16,19 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(hasToken());
   const [user, setUser] = useState(null);
   const [resources, setResources] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [selectedTag, setSelectedTag] = useState("");
+  const [reload, setReload] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!loggedIn) return;
-    Promise.all([getMe(), getResources()])
-      .then(([me, list]) => {
+    Promise.all([getMe(), getTags(), getResources(selectedTag)])
+      .then(([me, tagList, list]) => {
         setUser(me);
+        setTags(tagList);
         setResources(list);
+        setError("");
       })
       .catch((err) => {
         const msg = err.message.toLowerCase();
@@ -33,17 +39,20 @@ function App() {
         }
         setError(err.message);
       });
-  }, [loggedIn]);
+  }, [loggedIn, selectedTag, reload]);
 
   function handleLogout() {
     logout();
     setLoggedIn(false);
     setUser(null);
     setResources([]);
+    setTags([]);
+    setSelectedTag("");
   }
 
-  function handleCreated(resource) {
-    setResources((prev) => [resource, ...prev]);
+  function handleCreated() {
+    setSelectedTag("");
+    setReload((n) => n + 1);
   }
 
   async function handleDelete(id) {
@@ -70,6 +79,23 @@ function App() {
           {error && <p className="error">{error}</p>}
 
           <ResourceForm onCreated={handleCreated} />
+
+          <div className="filter">
+            <label>
+              Filter by tag
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+              >
+                <option value="">All tags</option>
+                {tags.map((t) => (
+                  <option key={t.id} value={t.name}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           <ResourceList resources={resources} onDelete={handleDelete} />
         </>
