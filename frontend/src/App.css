@@ -175,3 +175,14 @@ button.link {
   border-radius: 6px;
   font: inherit;
 }
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+button.secondary {
+  background: #e5e7eb;
+  color: #111827;
+}

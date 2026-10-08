@@ -55,6 +55,10 @@ function App() {
     setReload((n) => n + 1);
   }
 
+  function handleUpdated() {
+    setReload((n) => n + 1);
+  }
+
   async function handleDelete(id) {
     if (!window.confirm("Delete this resource?")) return;
     try {
@@ -78,7 +82,7 @@ function App() {
 
           {error && <p className="error">{error}</p>}
 
-          <ResourceForm onCreated={handleCreated} />
+          <ResourceForm onSaved={handleCreated} />
 
           <div className="filter">
             <label>
@@ -97,7 +101,11 @@ function App() {
             </label>
           </div>
 
-          <ResourceList resources={resources} onDelete={handleDelete} />
+          <ResourceList
+            resources={resources}
+            onDelete={handleDelete}
+            onUpdated={handleUpdated}
+          />
         </>
       ) : (
         <AuthForm onLoggedIn={() => setLoggedIn(true)} />

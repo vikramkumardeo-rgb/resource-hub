@@ -1,14 +1,24 @@
 import { useState } from "react";
-import { createResource } from "./api";
+import { createResource, updateResource } from "./api";
 
-function ResourceForm({ onCreated }) {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [resourceType, setResourceType] = useState("Book");
-  const [url, setUrl] = useState("");
-  const [summary, setSummary] = useState("");
-  const [rating, setRating] = useState("");
-  const [tags, setTags] = useState("");
+function ResourceForm({ resource, onSaved, onCancel }) {
+  const isEdit = Boolean(resource);
+
+  const [title, setTitle] = useState(resource ? resource.title : "");
+  const [author, setAuthor] = useState(resource ? resource.author : "");
+  const [resourceType, setResourceType] = useState(
+    resource ? resource.resource_type : "Book"
+  );
+  const [url, setUrl] = useState(resource ? resource.url : "");
+  const [summary, setSummary] = useState(
+    resource && resource.summary ? resource.summary : ""
+  );
+  const [rating, setRating] = useState(
+    resource && resource.rating ? String(resource.rating) : ""
+  );
+  const [tags, setTags] = useState(
+    resource ? resource.tags.map((t) => t.name).join(", ") : ""
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -30,18 +40,24 @@ function ResourceForm({ onCreated }) {
     };
     if (rating !== "") {
       data.rating = Number(rating);
+    } else if (isEdit) {
+      data.rating = null;
     }
 
     try {
-      const created = await createResource(data);
-      onCreated(created);
-      setTitle("");
-      setAuthor("");
-      setResourceType("Book");
-      setUrl("");
-      setSummary("");
-      setRating("");
-      setTags("");
+      const saved = isEdit
+        ? await updateResource(resource.id, data)
+        : await createResource(data);
+      onSaved(saved);
+      if (!isEdit) {
+        setTitle("");
+        setAuthor("");
+        setResourceType("Book");
+        setUrl("");
+        setSummary("");
+        setRating("");
+        setTags("");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -51,7 +67,7 @@ function ResourceForm({ onCreated }) {
 
   return (
     <form className="resource-form" onSubmit={handleSubmit}>
-      <h2>Add a resource</h2>
+      <h2>{isEdit ? "Edit resource" : "Add a resource"}</h2>
 
       {error && <p className="error">{error}</p>}
 
@@ -126,9 +142,16 @@ function ResourceForm({ onCreated }) {
         />
       </label>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Add resource"}
-      </button>
+      <div className="actions">
+        <button type="submit" disabled={loading}>
+          {loading ? "Saving..." : isEdit ? "Save changes" : "Add resource"}
+        </button>
+        {onCancel && (
+          <button type="button" className="secondary" onClick={onCancel}>
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

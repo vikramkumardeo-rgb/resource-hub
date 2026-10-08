@@ -64,6 +64,14 @@ export function createResource(resource) {
     });
 }
 
+export function updateResource(id, resource) {
+    return request(`/resources/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resource),
+    });
+}
+
 export function deleteResource(id) {
     return request(`/resources/${id}`, { method: "DELETE" });
 }
