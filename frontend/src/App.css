@@ -130,3 +130,30 @@ button.link {
   color: #6b7280;
   text-align: center;
 }
+
+.resource-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.resource-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.resource-form input,
+.resource-form select,
+.resource-form textarea {
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+}

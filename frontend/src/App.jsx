@@ -7,6 +7,7 @@ import {
   logout,
 } from "./api";
 import AuthForm from "./AuthForm";
+import ResourceForm from "./ResourceForm";
 import ResourceList from "./ResourceList";
 import "./App.css";
 
@@ -23,7 +24,7 @@ function App() {
         setUser(me);
         setResources(list);
       })
-            .catch((err) => {
+      .catch((err) => {
         const msg = err.message.toLowerCase();
         if (msg.includes("token") || msg.includes("not authenticated")) {
           logout();
@@ -39,6 +40,10 @@ function App() {
     setLoggedIn(false);
     setUser(null);
     setResources([]);
+  }
+
+  function handleCreated(resource) {
+    setResources((prev) => [resource, ...prev]);
   }
 
   async function handleDelete(id) {
@@ -63,6 +68,8 @@ function App() {
           </div>
 
           {error && <p className="error">{error}</p>}
+
+          <ResourceForm onCreated={handleCreated} />
 
           <ResourceList resources={resources} onDelete={handleDelete} />
         </>
