@@ -81,7 +81,7 @@ You need Docker Desktop and Git.
 
 On the first start the backend creates the database tables automatically. Click **Create account** on the login page to register your first user.
 
-To stop the containers: `docker compose stop`. To remove them while keeping the data: `docker compose down`. Do not use `docker compose down -v`, because it deletes the database volume.
+To stop the containers: **Changing the database password later:** `POSTGRES_PASSWORD` is only used the first time the database is created. If you change it in `.env` after the first  `docker compose up`, the databse keeps the old password and the backend stops with `password authentication failed`. To reset it, run `docker compose down -v` and then `docker compose up -d --build`. **Warning:** this deletes all data stored in the database. `docker compose stop`. To remove them while keeping the data: `docker compose down`. Do not use `docker compose down -v`, because it deletes the database volume.
 
 ## API overview
 
@@ -135,6 +135,12 @@ resource-hub/
 ## Run without Docker (for development)
 
 1. Start only the database: `docker compose up -d db`
+The backend reads the database address from the `DATABASE_URL` environment variable. If you do not set it, it assumes the password `hubpass`. If you chose a different `POSTGRES_PASSWORD` in `.env`, set `DATABASE_URL` in the same terminal before step 2, replacing `your-password` with the password from your `.env` file (avoid special characters such as `@` or `:`):
+
+```
+   $env:DATABASE_URL = "postgresql+psycopg://hubuser:your-password@localhost:5432/resourcehub"
+```
+
 2. Backend:
 
 ```
