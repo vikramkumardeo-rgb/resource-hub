@@ -41,48 +41,52 @@ You need Docker Desktop and Git.
 1. Clone the repo and enter it:
 
 ```
-   git clone https://github.com/vikramkumardeo-rgb/resource-hub.git
-   cd resource-hub
+git clone https://github.com/vikramkumardeo-rgb/resource-hub.git
+cd resource-hub
 ```
 
-2. Create the two environment files from the examples.
-
-   Windows (PowerShell):
+2. Build and start everything. No setup is needed, because every setting has a default for local use:
 
 ```
-   Copy-Item .env.example .env
-   Copy-Item backend\.env.example backend\.env
+docker compose up -d --build
 ```
 
-   macOS / Linux:
+3. Open the app:
 
-```
-   cp .env.example .env
-   cp backend/.env.example backend/.env
-```
-
-3. Edit the files:
-   - In `.env`, set a database password in `POSTGRES_PASSWORD`.
-   - In `backend/.env`, set `SECRET_KEY` to a long random value. You can generate one with:
-
-```
-     python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-4. Build and start everything:
-
-```
-   docker compose up -d --build
-```
-
-5. Open the app:
-   - App: http://localhost:5173
-   - API docs: http://localhost:8000/docs
+- App: http://localhost:5173
+- API docs: http://localhost:8000/docs
 
 On the first start the backend creates the database tables automatically. Click **Create account** on the login page to register your first user.
 
-To stop the containers: **Changing the database password later:** `POSTGRES_PASSWORD` is only used the first time the database is created. If you change it in `.env` after the first  `docker compose up`, the databse keeps the old password and the backend stops with `password authentication failed`. To reset it, run `docker compose down -v` and then `docker compose up -d --build`. **Warning:** this deletes all data stored in the database. `docker compose stop`. To remove them while keeping the data: `docker compose down`. Do not use `docker compose down -v`, because it deletes the database volume.
+### Use your own passwords (recommended)
 
+The defaults (database password `hubpass` and a built-in development secret key) are meant for local use only. To use your own values, create a `.env` file from the example. Docker Compose reads it automatically.
+
+Windows (PowerShell):
+
+```
+Copy-Item .env.example .env
+```
+
+macOS / Linux:
+
+```
+cp .env.example .env
+```
+
+Then edit `.env`: set `POSTGRES_PASSWORD`, and set `SECRET_KEY` to a long random value. You can generate one with:
+
+```
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Start again with `docker compose up -d --build`.
+
+### Stopping and resetting
+
+To stop the containers: `docker compose stop`. To remove them while keeping the data: `docker compose down`. Do not use `docker compose down -v`, because it deletes the database volume.
+
+**Changing the database password later:** `POSTGRES_PASSWORD` is only used the first time the database is created. If you change it after the first `docker compose up`, the database keeps the old password and the backend stops with `password authentication failed`. To reset it, run `docker compose down -v` and then `docker compose up -d --build`. **Warning:** this deletes all data stored in the database.
 ## API overview
 
 | Method | Path | Description | Auth |
@@ -134,32 +138,42 @@ resource-hub/
 
 ## Run without Docker (for development)
 
-1. Start only the database: `docker compose up -d db`
-The backend reads the database address from the `DATABASE_URL` environment variable. If you do not set it, it assumes the password `hubpass`. If you chose a different `POSTGRES_PASSWORD` in `.env`, set `DATABASE_URL` in the same terminal before step 2, replacing `your-password` with the password from your `.env` file (avoid special characters such as `@` or `:`):
+1. Start only the database:
 
 ```
-   $env:DATABASE_URL = "postgresql+psycopg://hubuser:your-password@localhost:5432/resourcehub"
+docker compose up -d db
 ```
 
-2. Backend:
+The backend reads the database address from the `DATABASE_URL` environment variable. If it is not set, it assumes the password `hubpass`, which matches the default in `docker-compose.yml`. If you set a different `POSTGRES_PASSWORD` in `.env`, set `DATABASE_URL` in the same terminal before step 3, replacing `your-password` with your own (avoid special characters such as `@` or `:`). It lasts only for that terminal window:
 
 ```
-   cd backend
-   python -m venv .venv
-   .venv\Scripts\Activate.ps1
-   pip install -r requirements.txt
-   python create_tables.py
-   uvicorn main:app --reload
+$env:DATABASE_URL = "postgresql+psycopg://hubuser:your-password@localhost:5432/resourcehub"
 ```
 
-3. Frontend (in a second terminal):
+2. Create the backend settings file. It holds the `SECRET_KEY` used to sign login tokens. Open `backend/.env` afterwards and set `SECRET_KEY` to a long random value (see "Use your own passwords" above):
 
 ```
-   cd frontend
-   npm install
-   npm run dev
+cd backend
+Copy-Item .env.example .env
 ```
 
+3. Run the backend:
+
+```
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python create_tables.py
+uvicorn main:app --reload
+```
+
+4. Frontend (in a second terminal):
+
+```
+cd frontend
+npm install
+npm run dev
+```
 ## Screenshots
 
 ![Login](docs/login.png)
